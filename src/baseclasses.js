@@ -160,8 +160,9 @@ _.placeCursor = function(cursor) {
   }));
 };
 _.latex = function() {
-  return this.foldChildren(this.ctrlSeq, function(latex, child) {
-    return latex + '{' + (child.latex() || ' ') + '}';
+  //return "%s{%s}{%s}..." % this.ctrlSeq, this.firstChild.latex(), ...
+  return this.foldChildren(this.ctrlSeq, function(latex, block) {
+    return latex + '{' + (block.latex() || ' ') + '}';
   });
 };
 _.textTemplate = [''];
@@ -200,8 +201,9 @@ _.isEmpty = function(){ return true; };
  */
 var MathBlock = _class(new MathElement);
 _.latex = function() {
-  return this.foldChildren('', function(latex, child) {
-    return latex + child.latex();
+  //return this.all().latex().join('')
+  return this.foldChildren('', function(latexSoFar, cmd) {
+    return latexSoFar + cmd.latex();
   });
 };
 _.text = function() {
