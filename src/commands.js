@@ -81,9 +81,9 @@ var SupSub = _class(new MathCmd, function(cmd, html, text) {
 _.latex = function() {
   var latex = this.firstChild.latex();
   if (latex.length === 1)
-    return this.cmd + latex;
+    return this.ctrlSeq + latex;
   else
-    return this.cmd + '{' + (latex || ' ') + '}';
+    return this.ctrlSeq + '{' + (latex || ' ') + '}';
 };
 _.redraw = function() {
   this.respace();
@@ -94,9 +94,9 @@ _.redraw = function() {
 };
 _.respace = function() {
   if (
-    this.prev.cmd === '\\int ' || (
-      this.prev instanceof SupSub && this.prev.cmd != this.cmd &&
-      this.prev.prev && this.prev.prev.cmd === '\\int '
+    this.prev.ctrlSeq === '\\int ' || (
+      this.prev instanceof SupSub && this.prev.ctrlSeq != this.ctrlSeq &&
+      this.prev.prev && this.prev.prev.ctrlSeq === '\\int '
     )
   ) {
     if (!this.limit) {
@@ -111,17 +111,17 @@ _.respace = function() {
     }
   }
 
-  if (this.respaced = this.prev instanceof SupSub && this.prev.cmd != this.cmd && !this.prev.respaced) {
+  if (this.respaced = this.prev instanceof SupSub && this.prev.ctrlSeq != this.ctrlSeq && !this.prev.respaced) {
     var fontSize = +this.jQ.css('fontSize').slice(0,-2),
       prevWidth = this.prev.jQ.outerWidth()
       thisWidth = this.jQ.outerWidth();
     this.jQ.css({
-      left: (this.limit && this.cmd === '_' ? -.25 : 0) - prevWidth/fontSize + 'em',
+      left: (this.limit && this.ctrlSeq === '_' ? -.25 : 0) - prevWidth/fontSize + 'em',
       marginRight: .1 - min(thisWidth, prevWidth)/fontSize + 'em'
         //1px extra so it doesn't wrap in retarded browsers (Firefox 2, I think)
     });
   }
-  else if (this.limit && this.cmd === '_') {
+  else if (this.limit && this.ctrlSeq === '_') {
     this.jQ.css({
       left: '-.25em',
       marginRight: ''
@@ -148,7 +148,7 @@ LatexCmds['^'] = proto(SupSub, function() {
 });
 
 var Fraction = _class(new MathCmd);
-_.cmd = '\\frac';
+_.ctrlSeq = '\\frac';
 _.html_template = [
   '<span class="fraction"></span>',
   '<span class="numerator"></span>',
@@ -177,7 +177,7 @@ _.createBefore = function(cursor) {
 
     if (prev instanceof BigSymbol && prev.next instanceof SupSub) {
       prev = prev.next;
-      if (prev.next instanceof SupSub && prev.next.cmd != prev.cmd)
+      if (prev.next instanceof SupSub && prev.next.ctrlSeq != prev.ctrlSeq)
         prev = prev.next;
     }
 
@@ -192,7 +192,7 @@ _.createBefore = function(cursor) {
 LatexCmds.over = CharCmds['/'] = LiveFraction;
 
 var SquareRoot = _class(new MathCmd);
-_.cmd = '\\sqrt';
+_.ctrlSeq = '\\sqrt';
 _.html_template = [
   '<span class="block"><span class="sqrt-prefix">&radic;</span></span>',
   '<span class="sqrt-stem"></span>'
@@ -244,7 +244,7 @@ _.createBlocks = function() { //FIXME: possible Law of Demeter violation, hardco
   this.bracketjQs = block.prev().add(block.next());
 };
 _.latex = function() {
-  return this.cmd + this.firstChild.latex() + this.end;
+  return this.ctrlSeq + this.firstChild.latex() + this.end;
 };
 _.redraw = function() {
   var height = this.blockjQ.outerHeight()/+this.blockjQ.css('fontSize').slice(0,-2);
@@ -310,7 +310,7 @@ _.createBefore = CloseBracket.prototype.createBefore;
 LatexCmds.lpipe = LatexCmds.rpipe = CharCmds['|'] = Pipes;
 
 var TextBlock = _class(new MathCmd);
-_.cmd = '\\text';
+_.ctrlSeq = '\\text';
 _.html_template = ['<span class="text"></span>'];
 _.replaces = function(replacedText) {
   if (replacedText instanceof MathFragment)
@@ -400,7 +400,7 @@ _.focus = function() {
   MathBlock.prototype.focus.call(this);
 
   var textblock = this.parent;
-  if (textblock.next.cmd === textblock.cmd) { //TODO: seems like there should be a better way to move MathElements around
+  if (textblock.next.ctrlSeq === textblock.ctrlSeq) { //TODO: seems like there should be a better way to move MathElements around
     var innerblock = this,
       cursor = textblock.cursor,
       next = textblock.next.firstChild;
@@ -427,7 +427,7 @@ _.focus = function() {
 
     cursor.parent.bubble('redraw');
   }
-  else if (textblock.prev.cmd === textblock.cmd) {
+  else if (textblock.prev.ctrlSeq === textblock.ctrlSeq) {
     var cursor = textblock.cursor;
     if (cursor.prev)
       textblock.prev.firstChild.focus();
@@ -447,7 +447,7 @@ LatexCmds.textmd =
 
 function makeTextBlock(latex, html) {
   var SomeTextBlock = _subclass(TextBlock);
-  _.cmd = latex;
+  _.ctrlSeq = latex;
   _.html_template = [ html ];
   return SomeTextBlock;
 }
@@ -470,7 +470,7 @@ LatexCmds.lowercase =
 
 // input box to type a variety of LaTeX commands beginning with a backslash
 var LatexCommandInput = _class(new MathCmd);
-_.cmd = '\\';
+_.ctrlSeq = '\\';
 _.replaces = function(replacedFragment) {
   this._replacedFragment = replacedFragment.detach();
   this.isEmpty = function(){ return false; };
@@ -546,7 +546,7 @@ _.renderCommand = function() {
 CharCmds['\\'] = LatexCommandInput;
   
 var Binomial = _class(new MathCmd);
-_.cmd = '\\binom';
+_.ctrlSeq = '\\binom';
 _.html_template =
   ['<span class="block"></span>', '<span></span>', '<span></span>'];
 _.createBlocks = function() {
@@ -567,7 +567,7 @@ _.createBefore = LiveFraction.prototype.createBefore;
 LatexCmds.choose = Choose;
 
 var Vector = _class(new MathCmd);
-_.cmd = '\\vector';
+_.ctrlSeq = '\\vector';
 _.html_template = ['<span class="array"></span>', '<span></span>'];
 _.latex = function() {
   return '\\begin{matrix}' + this.foldChildren([], function(latex, child) {

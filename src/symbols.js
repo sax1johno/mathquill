@@ -8,12 +8,12 @@ var Variable = _class(new Symbol, function(ch, html) {
   Symbol.call(this, ch, '<var>'+(html || ch)+'</var>');
 });
 _.text = function() {
-  var text = this.cmd;
+  var text = this.ctrlSeq;
   if (this.prev && !(this.prev instanceof Variable)
       && !(this.prev instanceof BinaryOperator))
     text = '*' + text;
   if (this.next && !(this.next instanceof BinaryOperator)
-      && !(this.next.cmd === '^'))
+      && !(this.next.ctrlSeq === '^'))
     text += '*';
   return text;
 };

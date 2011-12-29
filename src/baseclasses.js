@@ -36,10 +36,10 @@ _.bubble = function(event, arg) {
  * Descendant commands are organized into blocks.
  * May be passed a MathFragment that's being replaced.
  */
-var MathCmd = _class(new MathElement, function(cmd, html_template, text_template) {
+var MathCmd = _class(new MathElement, function(ctrlSeq, html_template, text_template) {
   var self = this; // minifier optimization
 
-  if (cmd) self.cmd = cmd;
+  if (ctrlSeq) self.ctrlSeq = ctrlSeq;
   if (html_template) self.html_template = html_template;
   if (text_template) self.text_template = text_template;
 });
@@ -160,7 +160,7 @@ _.placeCursor = function(cursor) {
   }));
 };
 _.latex = function() {
-  return this.foldChildren(this.cmd, function(latex, child) {
+  return this.foldChildren(this.ctrlSeq, function(latex, child) {
     return latex + '{' + (child.latex() || ' ') + '}';
   });
 };
@@ -180,15 +180,15 @@ _.text = function() {
 /**
  * Lightweight command without blocks or children.
  */
-var Symbol = _class(new MathCmd, function(cmd, html, text) {
-  MathCmd.call(this, cmd, [ html ],
-    [ text || (cmd && cmd.length > 1 ? cmd.slice(1) : cmd) ]);
+var Symbol = _class(new MathCmd, function(ctrlSeq, html, text) {
+  MathCmd.call(this, ctrlSeq, [ html ],
+    [ text || (ctrlSeq && ctrlSeq.length > 1 ? ctrlSeq.slice(1) : ctrlSeq) ]);
 });
 _.replaces = function(replacedFragment) {
   replacedFragment.remove();
 };
 _.createBlocks = $.noop;
-_.latex = function(){ return this.cmd; };
+_.latex = function(){ return this.ctrlSeq; };
 _.text = function(){ return this.text_template; };
 _.placeCursor = $.noop;
 _.isEmpty = function(){ return true; };
