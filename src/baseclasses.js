@@ -46,6 +46,70 @@ var MathCommand = _class(new MathElement, function(cmd, html_template, text_temp
 _.replaces = function(replacedFragment) {
   this.replacedFragment = replacedFragment;
 };
+_.isEmpty = function() {
+  return this.foldChildren(true, function(isEmpty, child) {
+    return isEmpty && child.isEmpty();
+  });
+};
+_.remove = function() {
+  var self = this,
+      prev = self.prev,
+      next = self.next,
+      parent = self.parent;
+
+  if (prev)
+    prev.next = next;
+  else
+    parent.firstChild = next;
+
+  if (next)
+    next.prev = prev;
+  else
+    parent.lastChild = prev;
+
+  self.jQ.remove();
+
+  return self;
+};
+_.insertAt = function(parent, prev, next) {
+  var cmd = this;
+
+  cmd.parent = parent;
+  cmd.next = next;
+  cmd.prev = prev;
+
+  if (prev)
+    prev.next = cmd;
+  else
+    parent.firstChild = cmd;
+
+  if (next)
+    next.prev = cmd;
+  else
+    parent.lastChild = cmd;
+
+  return cmd;
+};
+_.createBefore = _._createBefore = function(cursor) {
+  var cmd = this;
+
+  cmd.jQ = $(cmd.html_template[0]).data(jQueryDataKey, {cmd: cmd});
+  cmd.createBlocks();
+  cursor.jQ.before(cmd.jQ);
+
+  cursor.prev = cmd.insertAt(cursor.parent, cursor.prev, cursor.next);
+
+  //adjust context-sensitive spacing
+  cmd.respace();
+  if (cmd.next)
+    cmd.next.respace();
+  if (cmd.prev)
+    cmd.prev.respace();
+
+  cmd.placeCursor(cursor);
+
+  cmd.bubble('redraw');
+};
 _.createBlocks = _._createBlocks = function() {
   var self = this, replacedFragment = self.replacedFragment;
   //single-block commands
@@ -88,6 +152,13 @@ _.createBlocks = _._createBlocks = function() {
   }
   self.lastChild = newBlock;
 };
+_.respace = $.noop; //placeholder for context-sensitive spacing
+_.placeCursor = function(cursor) {
+  //append the cursor to the first empty child, or if none empty, the last one
+  cursor.appendTo(this.foldChildren(this.firstChild, function(prev, child) {
+    return prev.isEmpty() ? prev : child;
+  }));
+};
 _.latex = function() {
   return this.foldChildren(this.cmd, function(latex, child) {
     return latex + '{' + (child.latex() || ' ') + '}';
@@ -104,77 +175,6 @@ _.text = function() {
       return text + child_text.slice(1, -1) + this.text_template[i];
     return text + child.text() + (this.text_template[i] || '');
   });
-};
-_.insertAt = function(parent, prev, next) {
-  var cmd = this;
-
-  cmd.parent = parent;
-  cmd.next = next;
-  cmd.prev = prev;
-
-  if (prev)
-    prev.next = cmd;
-  else
-    parent.firstChild = cmd;
-
-  if (next)
-    next.prev = cmd;
-  else
-    parent.lastChild = cmd;
-
-  return cmd;
-};
-_.createBefore = _._createBefore = function(cursor) {
-  var cmd = this;
-
-  cmd.jQ = $(cmd.html_template[0]).data(jQueryDataKey, {cmd: cmd});
-  cmd.createBlocks();
-  cursor.jQ.before(cmd.jQ);
-
-  cursor.prev = cmd.insertAt(cursor.parent, cursor.prev, cursor.next);
-
-  //adjust context-sensitive spacing
-  cmd.respace();
-  if (cmd.next)
-    cmd.next.respace();
-  if (cmd.prev)
-    cmd.prev.respace();
-
-  cmd.placeCursor(cursor);
-
-  cmd.bubble('redraw');
-};
-_.respace = $.noop; //placeholder for context-sensitive spacing
-_.placeCursor = function(cursor) {
-  //append the cursor to the first empty child, or if none empty, the last one
-  cursor.appendTo(this.foldChildren(this.firstChild, function(prev, child) {
-    return prev.isEmpty() ? prev : child;
-  }));
-};
-_.isEmpty = function() {
-  return this.foldChildren(true, function(isEmpty, child) {
-    return isEmpty && child.isEmpty();
-  });
-};
-_.remove = function() {
-  var self = this,
-      prev = self.prev,
-      next = self.next,
-      parent = self.parent;
-
-  if (prev)
-    prev.next = next;
-  else
-    parent.firstChild = next;
-
-  if (next)
-    next.prev = prev;
-  else
-    parent.lastChild = prev;
-
-  self.jQ.remove();
-
-  return self;
 };
 
 /**
