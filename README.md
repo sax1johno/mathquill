@@ -90,7 +90,7 @@ throughout MathQuill, plus some globals and opening boilerplate.
 * The sugar saves typing when creating idiomatic prototypal JS classes,
   including setting `_` so you can assign methods and fields to the prototype.
 
-`baseclasses.js` defines abstract base classes for the JS objects that make up
+`math.js` defines abstract base classes for the JS objects that make up
 the virtual math DOM tree:
 
 * The math DOM has two kinds of nodes: commands and blocks

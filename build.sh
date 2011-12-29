@@ -13,7 +13,7 @@ fi
 echo "cat src/{blah,blah}.js > build/mathquill.js # not literally"
 cat \
   src/intro.js \
-  src/baseclasses.js \
+  src/math.js \
   src/rootelements.js \
   src/commands.js \
   src/symbols.js \
