@@ -37,11 +37,11 @@ _.bubble = function(event, arg) {
  * May be passed a MathFragment that's being replaced.
  */
 var MathCmd = _class(new MathElement, function(ctrlSeq, htmlTemplate, textTemplate) {
-  var self = this; // minifier optimization
+  var cmd = this;
 
-  if (ctrlSeq) self.ctrlSeq = ctrlSeq;
-  if (htmlTemplate) self.htmlTemplate = htmlTemplate;
-  if (textTemplate) self.textTemplate = textTemplate;
+  if (ctrlSeq) cmd.ctrlSeq = ctrlSeq;
+  if (htmlTemplate) cmd.htmlTemplate = htmlTemplate;
+  if (textTemplate) cmd.textTemplate = textTemplate;
 });
 _.replaces = function(replacedFragment) {
   this.replacedFragment = replacedFragment;
@@ -111,46 +111,46 @@ _.createBefore = _._createBefore = function(cursor) {
   cmd.bubble('redraw');
 };
 _.createBlocks = _._createBlocks = function() {
-  var self = this, replacedFragment = self.replacedFragment;
+  var cmd = this, replacedFragment = cmd.replacedFragment;
   //single-block commands
-  if (self.htmlTemplate.length === 1) {
-    self.firstChild =
-    self.lastChild =
-    self.jQ.data(jQueryDataKey).block =
+  if (cmd.htmlTemplate.length === 1) {
+    cmd.firstChild =
+    cmd.lastChild =
+    cmd.jQ.data(jQueryDataKey).block =
       (replacedFragment && replacedFragment.blockify()) || new MathBlock;
 
-    self.firstChild.parent = self;
-    self.firstChild.jQ = self.jQ.append(self.firstChild.jQ);
+    cmd.firstChild.parent = cmd;
+    cmd.firstChild.jQ = cmd.jQ.append(cmd.firstChild.jQ);
 
     return;
   }
   //otherwise, the succeeding elements of htmlTemplate should be child blocks
-  var newBlock, prev, num_blocks = self.htmlTemplate.length;
+  var newBlock, prev, num_blocks = cmd.htmlTemplate.length;
   this.firstChild = newBlock = prev =
     (replacedFragment && replacedFragment.blockify()) || new MathBlock;
 
-  newBlock.parent = self;
-  newBlock.jQ = $(self.htmlTemplate[1])
+  newBlock.parent = cmd;
+  newBlock.jQ = $(cmd.htmlTemplate[1])
     .data(jQueryDataKey, {block: newBlock})
     .append(newBlock.jQ)
-    .appendTo(self.jQ);
+    .appendTo(cmd.jQ);
 
   newBlock.blur();
 
   for (var i = 2; i < num_blocks; i += 1) {
     newBlock = new MathBlock;
-    newBlock.parent = self;
+    newBlock.parent = cmd;
     newBlock.prev = prev;
     prev.next = newBlock;
     prev = newBlock;
 
-    newBlock.jQ = $(self.htmlTemplate[i])
+    newBlock.jQ = $(cmd.htmlTemplate[i])
       .data(jQueryDataKey, {block: newBlock})
-      .appendTo(self.jQ);
+      .appendTo(cmd.jQ);
 
     newBlock.blur();
   }
-  self.lastChild = newBlock;
+  cmd.lastChild = newBlock;
 };
 _.respace = $.noop; //placeholder for context-sensitive spacing
 _.placeCursor = function(cursor) {
