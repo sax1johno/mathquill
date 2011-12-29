@@ -375,8 +375,8 @@ _.textInput = function(ch) {
   return false;
 };
 
-var RootMathCommand = _class(new MathCommand, function(cursor) {
-  MathCommand.call(this, '$');
+var RootMathCommand = _class(new MathCmd, function(cursor) {
+  MathCmd.call(this, '$');
   this.cursor = cursor;
 });
 _.html_template = ['<span class="mathquill-rendered-math"></span>'];

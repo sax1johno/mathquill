@@ -4,7 +4,7 @@
 
 /**
  * MathElement is the core Math DOM tree node prototype.
- * Both MathBlock's and MathCommand's descend from it.
+ * Both MathBlock's and MathCmd's descend from it.
  */
 var MathElement = _baseclass();
 _.prev = 0;
@@ -36,7 +36,7 @@ _.bubble = function(event, arg) {
  * Descendant commands are organized into blocks.
  * May be passed a MathFragment that's being replaced.
  */
-var MathCommand = _class(new MathElement, function(cmd, html_template, text_template) {
+var MathCmd = _class(new MathElement, function(cmd, html_template, text_template) {
   var self = this; // minifier optimization
 
   if (cmd) self.cmd = cmd;
@@ -180,8 +180,8 @@ _.text = function() {
 /**
  * Lightweight command without blocks or children.
  */
-var Symbol = _class(new MathCommand, function(cmd, html, text) {
-  MathCommand.call(this, cmd, [ html ],
+var Symbol = _class(new MathCmd, function(cmd, html, text) {
+  MathCmd.call(this, cmd, [ html ],
     [ text || (cmd && cmd.length > 1 ? cmd.slice(1) : cmd) ]);
 });
 _.replaces = function(replacedFragment) {
@@ -194,7 +194,7 @@ _.placeCursor = $.noop;
 _.isEmpty = function(){ return true; };
 
 /**
- * Children and parent of MathCommand's. Basically partitions all the
+ * Children and parent of MathCmd's. Basically partitions all the
  * symbols and operators that descend (in the Math DOM tree) from
  * ancestor operators.
  */

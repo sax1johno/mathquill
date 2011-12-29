@@ -62,9 +62,9 @@ function bind(cons) { //shorthand for binding arguments to constructor
 }
 
 function Style(cmd, html_template) {
-  MathCommand.call(this, cmd, [ html_template ]);
+  MathCmd.call(this, cmd, [ html_template ]);
 }
-proto(MathCommand, Style);
+proto(MathCmd, Style);
 //fonts
 LatexCmds.mathrm = bind(Style, '\\mathrm', '<span class="roman font"></span>');
 LatexCmds.mathit = bind(Style, '\\mathit', '<i class="font"></i>');
@@ -75,8 +75,8 @@ LatexCmds.mathtt = bind(Style, '\\mathtt', '<span class="monospace font"></span>
 LatexCmds.underline = bind(Style, '\\underline', '<span class="underline"></span>');
 LatexCmds.overline = LatexCmds.bar = bind(Style, '\\overline', '<span class="overline"></span>');
 
-var SupSub = _class(new MathCommand, function(cmd, html, text) {
-  MathCommand.call(this, cmd, [ html ], [ text ]);
+var SupSub = _class(new MathCmd, function(cmd, html, text) {
+  MathCmd.call(this, cmd, [ html ], [ text ]);
 });
 _.latex = function() {
   var latex = this.firstChild.latex();
@@ -147,7 +147,7 @@ LatexCmds['^'] = proto(SupSub, function() {
   SupSub.call(this, '^', '<sup></sup>', '**');
 });
 
-var Fraction = _class(new MathCommand);
+var Fraction = _class(new MathCmd);
 _.cmd = '\\frac';
 _.html_template = [
   '<span class="fraction"></span>',
@@ -191,7 +191,7 @@ _.createBefore = function(cursor) {
 
 LatexCmds.over = CharCmds['/'] = LiveFraction;
 
-var SquareRoot = _class(new MathCommand);
+var SquareRoot = _class(new MathCmd);
 _.cmd = '\\sqrt';
 _.html_template = [
   '<span class="block"><span class="sqrt-prefix">&radic;</span></span>',
@@ -210,7 +210,7 @@ function NthRoot(replacedFragment) {
 }
 _ = NthRoot.prototype = new SquareRoot;
 _.createBlocks = function() {
-  MathCommand.prototype.createBlocks.call(this);
+  MathCmd.prototype.createBlocks.call(this);
   this.jQ = this.firstChild.jQ.detach().add(this.jQ);
 };
 _.html_template = [
@@ -226,13 +226,13 @@ _.latex = function() {
 LatexCmds.nthroot = NthRoot;
 
 // Round/Square/Curly/Angle Brackets (aka Parens/Brackets/Braces)
-var Bracket = _class(new MathCommand, function(open, close, cmd, end) {
-  MathCommand.call(this, '\\left'+cmd,
+var Bracket = _class(new MathCmd, function(open, close, cmd, end) {
+  MathCmd.call(this, '\\left'+cmd,
     ['<span class="block"><span class="paren">'+open+'</span><span class="block"></span><span class="paren">'+close+'</span></span>'],
     [open, close]);
   this.end = '\\right'+end;
 });
-_.createBlocks = function() { //FIXME: possible Law of Demeter violation, hardcore MathCommand::createBlocks knowledge needed here
+_.createBlocks = function() { //FIXME: possible Law of Demeter violation, hardcore MathCmd::createBlocks knowledge needed here
   this.firstChild = this.lastChild =
     (this.replacedFragment && this.replacedFragment.blockify()) || new MathBlock;
   this.firstChild.parent = this;
@@ -309,7 +309,7 @@ _.createBefore = CloseBracket.prototype.createBefore;
 
 LatexCmds.lpipe = LatexCmds.rpipe = CharCmds['|'] = Pipes;
 
-var TextBlock = _class(new MathCommand);
+var TextBlock = _class(new MathCmd);
 _.cmd = '\\text';
 _.html_template = ['<span class="text"></span>'];
 _.replaces = function(replacedText) {
@@ -469,7 +469,7 @@ LatexCmds.lowercase =
   makeTextBlock('\\lowercase', '<span style="text-transform:lowercase" class="text"></span>');
 
 // input box to type a variety of LaTeX commands beginning with a backslash
-var LatexCommandInput = _class(new MathCommand);
+var LatexCommandInput = _class(new MathCmd);
 _.cmd = '\\';
 _.replaces = function(replacedFragment) {
   this._replacedFragment = replacedFragment.detach();
@@ -545,7 +545,7 @@ _.renderCommand = function() {
 
 CharCmds['\\'] = LatexCommandInput;
   
-var Binomial = _class(new MathCommand);
+var Binomial = _class(new MathCmd);
 _.cmd = '\\binom';
 _.html_template =
   ['<span class="block"></span>', '<span></span>', '<span></span>'];
@@ -566,7 +566,7 @@ _.createBefore = LiveFraction.prototype.createBefore;
 
 LatexCmds.choose = Choose;
 
-var Vector = _class(new MathCommand);
+var Vector = _class(new MathCmd);
 _.cmd = '\\vector';
 _.html_template = ['<span class="array"></span>', '<span></span>'];
 _.latex = function() {
@@ -670,7 +670,7 @@ _.keydown = function(e) {
 LatexCmds.vector = Vector;
 
 LatexCmds.editable = proto(RootMathCommand, function() {
-  MathCommand.call(this, '\\editable');
+  MathCmd.call(this, '\\editable');
   var cursor;
   this.createBefore = function(c){ this._createBefore(cursor = c); };
   this.createBlocks = function() {
