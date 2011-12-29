@@ -158,7 +158,7 @@ _.createBlocks = function() {
   this._createBlocks();
   this.jQ.append('<span style="display:inline-block;width:0">&nbsp;</span>');
 };
-_.text_template = ['(', '/', ')'];
+_.textTemplate = ['(', '/', ')'];
 
 LatexCmds.frac = LatexCmds.dfrac = LatexCmds.cfrac = LatexCmds.fraction = Fraction;
 
@@ -197,7 +197,7 @@ _.htmlTemplate = [
   '<span class="block"><span class="sqrt-prefix">&radic;</span></span>',
   '<span class="sqrt-stem"></span>'
 ];
-_.text_template = ['sqrt(', ')'];
+_.textTemplate = ['sqrt(', ')'];
 _.redraw = function() {
   var block = this.lastChild.jQ;
   scale(block.prev(), 1, block.innerHeight()/+block.css('fontSize').slice(0,-2) - .1);
@@ -218,7 +218,7 @@ _.htmlTemplate = [
   '<sup class="nthroot"></sup>',
   '<span class="sqrt-stem"></span>'
 ];
-_.text_template = ['sqrt[', '](', ')'];
+_.textTemplate = ['sqrt[', '](', ')'];
 _.latex = function() {
   return '\\sqrt['+this.firstChild.latex()+']{'+this.lastChild.latex()+'}';
 };
@@ -318,7 +318,7 @@ _.replaces = function(replacedText) {
   else if (typeof replacedText === 'string')
     this.replacedText = replacedText;
 };
-_.text_template = ['"', '"'];
+_.textTemplate = ['"', '"'];
 _.createBlocks = function() { //FIXME: another possible Law of Demeter violation, but this seems much cleaner, like it was supposed to be done this way
   this.firstChild =
   this.lastChild =
@@ -476,7 +476,7 @@ _.replaces = function(replacedFragment) {
   this.isEmpty = function(){ return false; };
 };
 _.htmlTemplate = ['<span class="latex-command-input">\\</span>'];
-_.text_template = ['\\'];
+_.textTemplate = ['\\'];
 _.createBefore = function(cursor) {
   this._createBefore(cursor);
   this.cursor = cursor.appendTo(this.firstChild);
@@ -557,7 +557,7 @@ _.createBlocks = function() {
     $('<span class="paren">(</span>').prependTo(this.jQ)
     .add( $('<span class="paren">)</span>').appendTo(this.jQ) );
 };
-_.text_template = ['choose(',',',')'];
+_.textTemplate = ['choose(',',',')'];
 _.redraw = Bracket.prototype.redraw;
 LatexCmds.binom = LatexCmds.binomial = Binomial;
 

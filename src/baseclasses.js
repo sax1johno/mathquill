@@ -36,12 +36,12 @@ _.bubble = function(event, arg) {
  * Descendant commands are organized into blocks.
  * May be passed a MathFragment that's being replaced.
  */
-var MathCmd = _class(new MathElement, function(ctrlSeq, htmlTemplate, text_template) {
+var MathCmd = _class(new MathElement, function(ctrlSeq, htmlTemplate, textTemplate) {
   var self = this; // minifier optimization
 
   if (ctrlSeq) self.ctrlSeq = ctrlSeq;
   if (htmlTemplate) self.htmlTemplate = htmlTemplate;
-  if (text_template) self.text_template = text_template;
+  if (textTemplate) self.textTemplate = textTemplate;
 });
 _.replaces = function(replacedFragment) {
   this.replacedFragment = replacedFragment;
@@ -164,16 +164,16 @@ _.latex = function() {
     return latex + '{' + (child.latex() || ' ') + '}';
   });
 };
-_.text_template = [''];
+_.textTemplate = [''];
 _.text = function() {
   var i = 0;
-  return this.foldChildren(this.text_template[i], function(text, child) {
+  return this.foldChildren(this.textTemplate[i], function(text, child) {
     i += 1;
     var child_text = child.text();
-    if (text && this.text_template[i] === '('
+    if (text && this.textTemplate[i] === '('
         && child_text[0] === '(' && child_text.slice(-1) === ')')
-      return text + child_text.slice(1, -1) + this.text_template[i];
-    return text + child.text() + (this.text_template[i] || '');
+      return text + child_text.slice(1, -1) + this.textTemplate[i];
+    return text + child.text() + (this.textTemplate[i] || '');
   });
 };
 
@@ -189,7 +189,7 @@ _.replaces = function(replacedFragment) {
 };
 _.createBlocks = $.noop;
 _.latex = function(){ return this.ctrlSeq; };
-_.text = function(){ return this.text_template; };
+_.text = function(){ return this.textTemplate; };
 _.placeCursor = $.noop;
 _.isEmpty = function(){ return true; };
 
