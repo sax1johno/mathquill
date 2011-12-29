@@ -182,7 +182,7 @@ _.text = function() {
  */
 var Symbol = _class(new MathCmd, function(ctrlSeq, html, text) {
   MathCmd.call(this, ctrlSeq, [ html ],
-    [ text || (ctrlSeq && ctrlSeq.length > 1 ? ctrlSeq.slice(1) : ctrlSeq) ]);
+    text || (ctrlSeq && ctrlSeq.length > 1 ? ctrlSeq.slice(1) : ctrlSeq) );
 });
 _.replaces = function(replacedFragment) {
   replacedFragment.remove();
