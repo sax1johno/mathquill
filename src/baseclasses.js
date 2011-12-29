@@ -36,11 +36,11 @@ _.bubble = function(event, arg) {
  * Descendant commands are organized into blocks.
  * May be passed a MathFragment that's being replaced.
  */
-var MathCmd = _class(new MathElement, function(ctrlSeq, html_template, text_template) {
+var MathCmd = _class(new MathElement, function(ctrlSeq, htmlTemplate, text_template) {
   var self = this; // minifier optimization
 
   if (ctrlSeq) self.ctrlSeq = ctrlSeq;
-  if (html_template) self.html_template = html_template;
+  if (htmlTemplate) self.htmlTemplate = htmlTemplate;
   if (text_template) self.text_template = text_template;
 });
 _.replaces = function(replacedFragment) {
@@ -93,7 +93,7 @@ _.insertAt = function(parent, prev, next) {
 _.createBefore = _._createBefore = function(cursor) {
   var cmd = this;
 
-  cmd.jQ = $(cmd.html_template[0]).data(jQueryDataKey, {cmd: cmd});
+  cmd.jQ = $(cmd.htmlTemplate[0]).data(jQueryDataKey, {cmd: cmd});
   cmd.createBlocks();
   cursor.jQ.before(cmd.jQ);
 
@@ -113,7 +113,7 @@ _.createBefore = _._createBefore = function(cursor) {
 _.createBlocks = _._createBlocks = function() {
   var self = this, replacedFragment = self.replacedFragment;
   //single-block commands
-  if (self.html_template.length === 1) {
+  if (self.htmlTemplate.length === 1) {
     self.firstChild =
     self.lastChild =
     self.jQ.data(jQueryDataKey).block =
@@ -124,13 +124,13 @@ _.createBlocks = _._createBlocks = function() {
 
     return;
   }
-  //otherwise, the succeeding elements of html_template should be child blocks
-  var newBlock, prev, num_blocks = self.html_template.length;
+  //otherwise, the succeeding elements of htmlTemplate should be child blocks
+  var newBlock, prev, num_blocks = self.htmlTemplate.length;
   this.firstChild = newBlock = prev =
     (replacedFragment && replacedFragment.blockify()) || new MathBlock;
 
   newBlock.parent = self;
-  newBlock.jQ = $(self.html_template[1])
+  newBlock.jQ = $(self.htmlTemplate[1])
     .data(jQueryDataKey, {block: newBlock})
     .append(newBlock.jQ)
     .appendTo(self.jQ);
@@ -144,7 +144,7 @@ _.createBlocks = _._createBlocks = function() {
     prev.next = newBlock;
     prev = newBlock;
 
-    newBlock.jQ = $(self.html_template[i])
+    newBlock.jQ = $(self.htmlTemplate[i])
       .data(jQueryDataKey, {block: newBlock})
       .appendTo(self.jQ);
 

@@ -61,8 +61,8 @@ function bind(cons) { //shorthand for binding arguments to constructor
   });
 }
 
-function Style(cmd, html_template) {
-  MathCmd.call(this, cmd, [ html_template ]);
+function Style(cmd, htmlTemplate) {
+  MathCmd.call(this, cmd, [ htmlTemplate ]);
 }
 proto(MathCmd, Style);
 //fonts
@@ -149,7 +149,7 @@ LatexCmds['^'] = proto(SupSub, function() {
 
 var Fraction = _class(new MathCmd);
 _.ctrlSeq = '\\frac';
-_.html_template = [
+_.htmlTemplate = [
   '<span class="fraction"></span>',
   '<span class="numerator"></span>',
   '<span class="denominator"></span>'
@@ -193,7 +193,7 @@ LatexCmds.over = CharCmds['/'] = LiveFraction;
 
 var SquareRoot = _class(new MathCmd);
 _.ctrlSeq = '\\sqrt';
-_.html_template = [
+_.htmlTemplate = [
   '<span class="block"><span class="sqrt-prefix">&radic;</span></span>',
   '<span class="sqrt-stem"></span>'
 ];
@@ -213,7 +213,7 @@ _.createBlocks = function() {
   MathCmd.prototype.createBlocks.call(this);
   this.jQ = this.firstChild.jQ.detach().add(this.jQ);
 };
-_.html_template = [
+_.htmlTemplate = [
   '<span class="block"><span class="sqrt-prefix">&radic;</span></span>',
   '<sup class="nthroot"></sup>',
   '<span class="sqrt-stem"></span>'
@@ -311,7 +311,7 @@ LatexCmds.lpipe = LatexCmds.rpipe = CharCmds['|'] = Pipes;
 
 var TextBlock = _class(new MathCmd);
 _.ctrlSeq = '\\text';
-_.html_template = ['<span class="text"></span>'];
+_.htmlTemplate = ['<span class="text"></span>'];
 _.replaces = function(replacedText) {
   if (replacedText instanceof MathFragment)
     this.replacedText = replacedText.remove().jQ.text();
@@ -448,7 +448,7 @@ LatexCmds.textmd =
 function makeTextBlock(latex, html) {
   var SomeTextBlock = _subclass(TextBlock);
   _.ctrlSeq = latex;
-  _.html_template = [ html ];
+  _.htmlTemplate = [ html ];
   return SomeTextBlock;
 }
 
@@ -475,7 +475,7 @@ _.replaces = function(replacedFragment) {
   this._replacedFragment = replacedFragment.detach();
   this.isEmpty = function(){ return false; };
 };
-_.html_template = ['<span class="latex-command-input">\\</span>'];
+_.htmlTemplate = ['<span class="latex-command-input">\\</span>'];
 _.text_template = ['\\'];
 _.createBefore = function(cursor) {
   this._createBefore(cursor);
@@ -547,7 +547,7 @@ CharCmds['\\'] = LatexCommandInput;
   
 var Binomial = _class(new MathCmd);
 _.ctrlSeq = '\\binom';
-_.html_template =
+_.htmlTemplate =
   ['<span class="block"></span>', '<span></span>', '<span></span>'];
 _.createBlocks = function() {
   this._createBlocks();
@@ -568,7 +568,7 @@ LatexCmds.choose = Choose;
 
 var Vector = _class(new MathCmd);
 _.ctrlSeq = '\\vector';
-_.html_template = ['<span class="array"></span>', '<span></span>'];
+_.htmlTemplate = ['<span class="array"></span>', '<span></span>'];
 _.latex = function() {
   return '\\begin{matrix}' + this.foldChildren([], function(latex, child) {
     latex.push(child.latex());

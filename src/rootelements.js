@@ -379,7 +379,7 @@ var RootMathCommand = _class(new MathCmd, function(cursor) {
   MathCmd.call(this, '$');
   this.cursor = cursor;
 });
-_.html_template = ['<span class="mathquill-rendered-math"></span>'];
+_.htmlTemplate = ['<span class="mathquill-rendered-math"></span>'];
 _.createBlocks = function() {
   this.firstChild =
   this.lastChild =
