@@ -34,7 +34,6 @@ _.bubble = function(event, arg) {
 /**
  * Commands and operators, like subscripts, exponents, or fractions.
  * Descendant commands are organized into blocks.
- * May be passed a MathFragment that's being replaced.
  */
 var MathCmd = _class(new MathElement, function(ctrlSeq, htmlTemplate, textTemplate) {
   var cmd = this;
