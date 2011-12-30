@@ -228,7 +228,7 @@ _.writeLatex = function(latex) {
 
         cursor.insertNew(cmd);
       }
-      cmd.eachChild(function(child) {
+      cmd.children().each(function(child) {
         cursor.appendTo(child);
         var token = latex.shift();
         if (!token) return false;
@@ -274,10 +274,10 @@ _.unwrapGramp = function() {
     prev = gramp.prev,
     cursor = this;
 
-  gramp.eachChild(function(uncle) {
+  gramp.children().each(function(uncle) {
     if (uncle.isEmpty()) return;
 
-    uncle.eachChild(function(cousin) {
+    uncle.children().each(function(cousin) {
       cousin.parent = greatgramp;
       cousin.jQ.insertBefore(gramp.jQ.first());
     });
@@ -489,14 +489,25 @@ _.deleteSelection = function() {
   return delete this.selection;
 };
 
-var Selection = _subclass(MathFragment);
-_.jQinit = function(children) {
-  this.jQ = children.wrapAll('<span class="selection"></span>').parent();
+var Selection = _class(new Group, function() {
+  Group.apply(this, arguments);
+  this.jQ = this.fold($(), function(jQ, el){ return jQ.add(el.jQ); })
+    .wrapAll('<span class="selection"></span>').parent();
     //can't do wrapAll(this.jQ = $(...)) because wrapAll will clone it
+});
+_.disown = function() {
+  var jQ = this.jQ.children();
+  this.clear().jQ = jQ;
+  return Group.prototype.disown.call(this);
 };
-_.blockify = function() {
-  this.jQ.replaceWith(this.jQ = this.jQ.children());
-  return MathFragment.prototype.blockify.call(this);
+_.latex = function() {
+  return this.fold('', function(latexSoFar, cmd) {
+    return latexSoFar + cmd.latex();
+  });
+};
+_.remove = function() {
+  this.jQ.remove();
+  return this.disown();
 };
 _.clear = function() {
   this.jQ.replaceWith(this.jQ.children());

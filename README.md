@@ -90,23 +90,22 @@ throughout MathQuill, plus some globals and opening boilerplate.
 * The sugar saves typing when creating idiomatic prototypal JS classes,
   including setting `_` so you can assign methods and fields to the prototype.
 
-`math.js` defines abstract base classes for the JS objects that make up
-the virtual math DOM tree:
+`tree.js` defines abstract base classes for the JS objects that make up
+the virtual DOM tree.
 
-* The math DOM has two kinds of nodes: commands and blocks
-    - blocks, like the root block, can contain any number of commands
-    - commands, like `x`, `1`, `+`, `\frac`, `\sqrt` (clearly siblings in the
-      tree) contain a fixed number of blocks
-        + symbols like `x`, `y`, `1`, `2`, `+`, `-` are commands with 0 blocks
-* All math DOM nodes are instances of `MathElement`
-    - blocks are instances of `MathBlock`
-    - commands are instances of `MathCommand`
-        + symbols are instances of `Symbol`
-* `MathFragment`s are basically 'subblocks' that encapsulate a "view" of
-  multiple commands. Like a pointer to a particular command, they have access
+* `Node`s are the actual elements of the tree.
+* `Interstice` is going to be a superclass of `Cursor`.
+* `Group`s of `Node`s basically encapsulate a "view" of a doubly-linked chain
+  of nodes. Like a pointer to a particular node, they have access
   to nodes in the tree but aren't part of the tree.
-    - `prev` and `next` seemed like a good idea at the time, they match
-      `Cursor`, but `first` and `last` instead are under consideration
+
+`math.js` defines abstract base classes for math nodes in the tree, of which
+there are two kinds:
+
+* commands, like `x`, `1`, `+`, `\frac`, `\sqrt` (clearly siblings in the
+  tree) contain a fixed number of blocks
+    - symbols like `x`, `y`, `1`, `2`, `+`, `-` are commands with 0 blocks
+* blocks, like the root block, can contain any number of commands
 
 `cursor.js` defines the "singleton" classes for the visible blinking
 cursor and highlighted selection. They are not part of the tree but have

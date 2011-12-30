@@ -10,7 +10,10 @@
 var $ = jQuery,
   undefined,
   _, //temp variable of prototypes
-  jQueryDataKey = '[[mathquill internal data]]',
+  jQueryDataKeyFor = {
+    cmd: '[MathQuill Internal Data: MathCmd]',
+    block: '[MathQuill Internal Data: MathBlock]'
+  },
   min = Math.min,
   max = Math.max;
 

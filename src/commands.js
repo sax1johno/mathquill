@@ -164,7 +164,7 @@ LatexCmds.frac = LatexCmds.dfrac = LatexCmds.cfrac = LatexCmds.fraction = Fracti
 
 var LiveFraction = _subclass(Fraction);
 _.createBefore = function(cursor) {
-  if (!this.replacedFragment) {
+  if (!this.replaced) {
     var prev = cursor.prev;
     while (prev &&
       !(
@@ -182,7 +182,7 @@ _.createBefore = function(cursor) {
     }
 
     if (prev !== cursor.prev) {
-      this.replaces(new MathFragment(prev.next || cursor.parent.firstChild, cursor.prev).detach());
+      this.replaces(new Group(prev.next || cursor.parent.firstChild, cursor.prev).disown());
       cursor.prev = prev;
     }
   }
@@ -233,15 +233,9 @@ var Bracket = _class(new MathCmd, function(open, close, cmd, end) {
   this.end = '\\right'+end;
 });
 _.createBlocks = function() { //FIXME: possible Law of Demeter violation, hardcore MathCmd::createBlocks knowledge needed here
-  this.firstChild = this.lastChild =
-    (this.replacedFragment && this.replacedFragment.blockify()) || new MathBlock;
-  this.firstChild.parent = this;
-  this.firstChild.jQ = this.jQ.children(':eq(1)')
-    .data(jQueryDataKey, {block: this.firstChild})
-    .append(this.firstChild.jQ);
-
-  var block = this.blockjQ = this.firstChild.jQ;
-  this.bracketjQs = block.prev().add(block.next());
+  var block = (new MathBlock(this.jQ.children(':eq(1)'), this.replaced)).adopt(this, 0, 0),
+    blockjQ = this.blockjQ = block.jQ;
+  this.bracketjQs = blockjQ.prev().add(blockjQ.next());
 };
 _.latex = function() {
   return this.ctrlSeq + this.firstChild.latex() + this.end;
@@ -263,7 +257,8 @@ var CloseBracket = _subclass(Bracket);
 _.createBefore = function(cursor) {
   //if I'm at the end of my parent who is a matching open-paren, and I am not
   //replacing a selection fragment, don't create me, just put cursor after my parent
-  if (!cursor.next && cursor.parent.parent && cursor.parent.parent.end === this.end && !this.replacedFragment)
+  if (!cursor.next && cursor.parent.parent
+      && cursor.parent.parent.end === this.end && !this.replaced)
     cursor.insertAfter(cursor.parent.parent);
   else
     this._createBefore(cursor);
@@ -313,7 +308,7 @@ var TextBlock = _class(new MathCmd);
 _.ctrlSeq = '\\text';
 _.htmlTemplate = ['<span class="text"></span>'];
 _.replaces = function(replacedText) {
-  if (replacedText instanceof MathFragment)
+  if (replacedText instanceof Group)
     this.replacedText = replacedText.remove().jQ.text();
   else if (typeof replacedText === 'string')
     this.replacedText = replacedText;
@@ -362,7 +357,7 @@ _.textInput = function(ch) {
   else if (!this.cursor.prev)
     this.cursor.insertBefore(this);
   else { //split apart
-    var next = new TextBlock(new MathFragment(this.cursor.next, this.firstChild.lastChild));
+    var next = new TextBlock(new Group(this.cursor.next, this.firstChild.lastChild));
     next.placeCursor = function(cursor) { //FIXME HACK: pretend no prev so they don't get merged
       this.prev = 0;
       delete this.placeCursor;
@@ -405,7 +400,7 @@ _.focus = function() {
       cursor = textblock.cursor,
       next = textblock.next.firstChild;
 
-    next.eachChild(function(child){
+    next.children().each(function(child){
       child.parent = innerblock;
       child.jQ.appendTo(innerblock.jQ);
     });
@@ -471,8 +466,9 @@ LatexCmds.lowercase =
 // input box to type a variety of LaTeX commands beginning with a backslash
 var LatexCommandInput = _class(new MathCmd);
 _.ctrlSeq = '\\';
-_.replaces = function(replacedFragment) {
-  this._replacedFragment = replacedFragment.detach();
+_.replaces = function(replaced) {
+  this._replaced = replaced.disown();
+  replaced.jQ.detach();
   this.isEmpty = function(){ return false; };
 };
 _.htmlTemplate = ['<span class="latex-command-input">\\</span>'];
@@ -480,10 +476,10 @@ _.textTemplate = ['\\'];
 _.createBefore = function(cursor) {
   this._createBefore(cursor);
   this.cursor = cursor.appendTo(this.firstChild);
-  if (this._replacedFragment) {
+  if (this._replaced) {
     var el = this.jQ[0];
     this.jQ =
-      this._replacedFragment.jQ.addClass('blur').bind(
+      this._replaced.jQ.addClass('blur').bind(
         'mousedown mousemove', //FIXME: is monkey-patching the mousedown and mousemove handlers the right way to do this?
         function(e) {
           $(e.target = el).trigger(e);
@@ -529,8 +525,8 @@ _.renderCommand = function() {
       cmd.replaces(latex);
       cmd.firstChild.focus = function(){ delete this.focus; return this; };
       this.cursor.insertNew(cmd).insertAfter(cmd);
-      if (this._replacedFragment)
-        this._replacedFragment.remove();
+      if (this._replaced)
+        this._replaced.remove();
 
       return;
     }
@@ -538,8 +534,8 @@ _.renderCommand = function() {
   else
     cmd = new VanillaSymbol('\\backslash ','\\');
 
-  if (this._replacedFragment)
-    cmd.replaces(this._replacedFragment);
+  if (this._replaced)
+    cmd.replaces(this._replaced);
   this.cursor.insertNew(cmd);
 };
 
@@ -570,13 +566,13 @@ var Vector = _class(new MathCmd);
 _.ctrlSeq = '\\vector';
 _.htmlTemplate = ['<span class="array"></span>', '<span></span>'];
 _.latex = function() {
-  return '\\begin{matrix}' + this.foldChildren([], function(latex, child) {
+  return '\\begin{matrix}' + this.children().fold([], function(latex, child) {
     latex.push(child.latex());
     return latex;
   }).join('\\\\') + '\\end{matrix}';
 };
 _.text = function() {
-  return '[' + this.foldChildren([], function(text, child) {
+  return '[' + this.children().fold([], function(text, child) {
     text.push(child.text());
     return text;
   }).join() + ']';
