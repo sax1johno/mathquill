@@ -89,3 +89,48 @@ $(function() {
   $('.mathquill-embedded-latex').mathquill();
 });
 
+var Mathquill = window.Mathquill = window.MQ = (function() {
+  function Mathquill(el, opts) {
+    this.$ = $(el);
+    this.opts = opts;
+  }
+
+  function rootType(self) {
+    if (self.opts.textbox) return RootTextBlock;
+
+    return RootMathBlock;
+  }
+
+  function getCursor(self) {
+    var el = self.$;
+    var data = el.data(jQueryDataKey);
+    var block = data && data.block;
+    return block && block.cursor;
+  }
+
+  // -*- public methods -*- //
+  $.extend(Mathquill.prototype, {
+    attach: function(el) {
+      var self = this;
+
+      createRoot(self.$, new (rootType(self)), self.opts.textbox, self.opts.editable);
+
+      return self;
+    },
+
+    write: function(latex) {
+      getCursor(this).writeLatex(latex);
+    }
+  });
+
+  return function mathquill(el, opts) {
+    el = $(el);
+
+    var mq = new Mathquill(el, opts || {});
+
+    mq.attach();
+
+    return mq;
+  }
+})();
+
