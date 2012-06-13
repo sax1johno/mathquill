@@ -47,6 +47,14 @@ var MathCommand = P(MathElement, function(_) {
     if (text_template) self.text_template = text_template;
   };
 
+  function firstBlock(self) {
+    var replacedFragment = self.replacedFragment;
+
+    if (replacedFragment) return replacedFragment.blockify();
+
+    return MathBlock();
+  }
+
   _.replaces = function(replacedFragment) {
     this.replacedFragment = replacedFragment;
   };
@@ -56,8 +64,7 @@ var MathCommand = P(MathElement, function(_) {
     if (self.html_template.length === 1) {
       self.firstChild =
       self.lastChild =
-      self.jQ.data(jQueryDataKey).block =
-        (replacedFragment && replacedFragment.blockify()) || MathBlock();
+      self.jQ.data(jQueryDataKey).block = firstBlock(self);
 
       self.firstChild.parent = self;
       self.firstChild.jQ = self.jQ.append(self.firstChild.jQ);
@@ -66,8 +73,7 @@ var MathCommand = P(MathElement, function(_) {
     }
     //otherwise, the succeeding elements of html_template should be child blocks
     var newBlock, prev, num_blocks = self.html_template.length;
-    this.firstChild = newBlock = prev =
-      (replacedFragment && replacedFragment.blockify()) || MathBlock();
+    this.firstChild = newBlock = prev = firstBlock(self);
 
     newBlock.parent = self;
     newBlock.jQ = $(self.html_template[1])
