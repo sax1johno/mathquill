@@ -10,6 +10,7 @@ OUTRO = $(SRC_DIR)/outro.js
 SOURCES = \
   ./vendor/pjs/src/p.js \
   $(SRC_DIR)/baseclasses.js \
+  $(SRC_DIR)/write_dom.js \
   $(SRC_DIR)/rootelements.js \
   $(SRC_DIR)/commands.js \
   $(SRC_DIR)/symbols.js \
