@@ -27,3 +27,6 @@ function bind(cons /*, args... */) {
   };
 }
 
+function error(msg) {
+  throw new Error(msg);
+}
