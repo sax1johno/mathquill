@@ -2,20 +2,11 @@
  * Abstract base classes of blocks and commands.
  ************************************************/
 
-var uuid = (function() {
-  var id = (new Date).getTime();
-
-  return function() { return id += 1; };
-})();
-
 /**
  * MathElement is the core Math DOM tree node prototype.
  * Both MathBlock's and MathCommand's descend from it.
  */
 var MathElement = P(function(_) {
-  _.init = function(obj) {
-    this.id = uuid();
-  };
   _.prev = 0;
   _.next = 0;
   _.parent = 0;
