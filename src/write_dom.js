@@ -47,10 +47,12 @@ function writeDOM(el) {
     // NB: .find doesn't include the top level.  We can safely assume
     // that the root node is almost always going to have a mq-command
     // or an mq-block, though.
-    dom.find('[mq-block],[mq-command]').andSelf().each(function() {
+    dom.find('*').andSelf().each(function() {
       var domNode = $(this);
       var blockId = domNode.attr('mq-block');
       var commandId = domNode.attr('mq-command');
+      if (!blockId && !commandId) return;
+
       var block;
       var command;
 
