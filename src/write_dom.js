@@ -25,9 +25,11 @@ function writeDOM(el) {
 
     buffer.push(str);
 
-    if (block) block.eachChild(function(child) {
-      child.writeHTML(write);
-    });
+    if (block) {
+      block.eachChild(function(child) {
+        child.writeHTML(write);
+      });
+    }
   }
 
   function register(el) {
