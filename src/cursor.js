@@ -30,7 +30,7 @@ var Cursor = P(function(_) {
       clearInterval(this.intervalId);
     else { //was hidden and detached, insert this.jQ back into HTML DOM
       if (this[R]) {
-        if (this.selection && this.selection.first[L] === this[L])
+        if (this.selection && this.selection.ends[L][L] === this[L])
           this.jQ.insertBefore(this.selection.jQ);
         else
           this.jQ.insertBefore(this[R].jQ.first());
@@ -50,6 +50,13 @@ var Cursor = P(function(_) {
     this.jQ = $();
     return this;
   };
+  _.insertAtPoint = function(point) {
+    var oldParent = this.parent;
+    this.parent = point.parent;
+    this[L] = point[L];
+    this[R] = point[R];
+    oldParent.blur();
+  };
   _.insertAt = function(parent, prev, next) {
     var old_parent = this.parent;
 
@@ -59,91 +66,83 @@ var Cursor = P(function(_) {
 
     old_parent.blur(); //blur may need to know cursor's destination
   };
-  _.insertBefore = function(el) {
-    this.insertAt(el.parent, el[L], el)
+  _.insertAdjacent = function(dir, el) {
+    prayDirection(dir);
+    this.insertAtPoint(el.adjacentPoint(dir));
     this.parent.jQ.addClass('hasCursor');
-    this.jQ.insertBefore(el.jQ.first());
-    return this;
+    jQinsertAdjacent(dir, this.jQ, jQgetExtreme(dir, el.jQ));
   };
-  _.insertAfter = function(el) {
-    this.insertAt(el.parent, el, el[R]);
-    this.parent.jQ.addClass('hasCursor');
-    this.jQ.insertAfter(el.jQ.last());
-    return this;
-  };
-  _.prependTo = function(el) {
-    this.insertAt(el, 0, el.ch[L]);
-    if (el.textarea) //never insert before textarea
-      this.jQ.insertAfter(el.textarea);
-    else
-      this.jQ.prependTo(el.jQ);
+  _.insertBefore = function(el) { return this.insertAdjacent(L, el); };
+  _.insertAfter = function(el) { return this.insertAdjacent(R, el); };
+
+  _.insertExtreme = function(dir, el) {
+    prayDirection(dir);
+    this.insertAtPoint(el.extremePoint(dir));
+
+    // never insert before textarea
+    if (dir === L && el.textarea) {
+      jQinsertAdjacent(-dir, this.jQ, el.textarea);
+    }
+    else {
+      jQinsertExtreme(dir, this.jQ, el.jQ);
+    }
+
     el.focus();
+
     return this;
   };
-  _.appendTo = function(el) {
-    this.insertAt(el, el.ch[R], 0);
-    this.jQ.appendTo(el.jQ);
-    el.focus();
+  _.prependTo = function(el) { return this.insertExtreme(L, el); };
+  _.appendTo = function(el) { return this.insertExtreme(R, el); };
+
+  _.hop = function(dir) {
+    prayDirection(dir);
+
+    jQinsertAdjacent(dir, this.jQ, jQgetExtreme(dir, this[dir].jQ));
+    this[-dir] = this[dir];
+    this[dir] = this[dir][dir];
     return this;
   };
-  _.hopLeft = function() {
-    this.jQ.insertBefore(this[L].jQ.first());
-    this[R] = this[L];
-    this[L] = this[L][L];
-    return this;
-  };
-  _.hopRight = function() {
-    this.jQ.insertAfter(this[R].jQ.last());
-    this[L] = this[R];
-    this[R] = this[R][R];
-    return this;
+  _.hopLeft = function() { return this.hop(L); };
+  _.hopRight = function() { return this.hop(R); };
+
+  _.moveHorizWithin = function(dir, block) {
+    prayDirection(dir);
+
+    if (this[dir]) {
+      if (this[dir].ch[-dir]) this.insertExtreme(-dir, this[dir].ch[-dir]);
+      else this.hop(dir);
+    }
+    else {
+      // we're at the beginning/end of the containing block, so do nothing
+      if (this.parent === block) return;
+
+      if (this.parent[dir]) this.insertExtreme(-dir, this.parent[dir]);
+      else this.insertAdjacent(dir, this.parent.parent);
+    }
   };
   _.moveLeftWithin = function(block) {
-    if (this[L]) {
-      if (this[L].ch[R]) this.appendTo(this[L].ch[R])
-      else this.hopLeft();
-    }
-    else {
-      // we're at the beginning of the containing block, so do nothing.
-      if (this.parent === block) return;
-
-      if (this.parent[L]) this.appendTo(this.parent[L]);
-      else this.insertBefore(this.parent.parent);
-    }
+    debugger;
+    return this.moveHorizWithin(L, block);
   };
   _.moveRightWithin = function(block) {
-    if (this[R]) {
-      if (this[R].ch[L]) this.prependTo(this[R].ch[L])
-      else this.hopRight();
-    }
-    else {
-      // we're at the end of the containing block, so do nothing.
-      if (this.parent === block) return;
-
-      if (this.parent[R]) this.prependTo(this.parent[R]);
-      else this.insertAfter(this.parent.parent);
-    }
+    return this.moveHorizWithin(R, block);
   };
-  _.moveLeft = function() {
+  _.move = function(dir) {
+    prayDirection(dir);
+
     clearUpDownCache(this);
 
-    if (this.selection)
-      this.insertBefore(this.selection.first).clearSelection();
-    else {
-      this.moveLeftWithin(this.root);
+    if (this.selection)  {
+      this.insertAdjacent(dir, this.selection.ends[dir]).clearSelection();
     }
-    return this.show();
-  };
-  _.moveRight = function() {
-    clearUpDownCache(this);
+    else {
+      this.moveHorizWithin(dir, this.root);
+    }
 
-    if (this.selection)
-      this.insertAfter(this.selection.last).clearSelection();
-    else {
-      this.moveRightWithin(this.root);
-    }
     return this.show();
   };
+  _.moveLeft = function() { return this.move(L); };
+  _.moveRight = function() { return this.move(R); };
 
   /**
    * moveUp and moveDown have almost identical algorithms:
@@ -295,8 +294,8 @@ var Cursor = P(function(_) {
       cmd = VanillaSymbol(ch);
 
     if (this.selection) {
-      this[L] = this.selection.first[L];
-      this[R] = this.selection.last[R];
+      this[L] = this.selection.ends[L][L];
+      this[R] = this.selection.ends[R][R];
       cmd.replaces(this.selection);
       delete this.selection;
     }
@@ -464,68 +463,50 @@ var Cursor = P(function(_) {
     this.insertAfter(right[R][L] || right.parent.ch[R]);
     this.root.selectionChanged();
   };
-  _.selectLeft = function() {
+  _.selectHoriz = function(dir) {
+    prayDirection(dir);
     clearUpDownCache(this);
-    if (this.selection) {
-      if (this.selection.first === this[R]) { //if cursor is at left edge of selection;
-        if (this[L]) //then extend left if possible
-          this.hopLeft().selection.extendLeft();
-        else if (this.parent !== this.root) //else level up if possible
-          this.insertBefore(this.parent.parent).selection.levelUp();
-      }
-      else { //else cursor is at right edge of selection, retract left if possible
-        this.hopLeft();
-        if (this.selection.first === this.selection.last) {
-          this.clearSelection().show(); //clear selection if retracting to nothing
-          return; //skip this.root.selectionChanged(), this.clearSelection() does it anyway
-        }
-        this.selection.retractLeft();
-      }
-    }
-    else {
-      if (this[L])
-        this.hopLeft();
-      else //end of a block
-        if (this.parent !== this.root)
-          this.insertBefore(this.parent.parent);
-        else
-          return;
 
-      this.hide().selection = Selection(this[R]);
+    if (this.selection) {
+      // if cursor is at the (dir) edge of selection
+      if (this.selection.ends[dir] === this[-dir]) {
+        // then extend left if possible
+        if (this[dir]) this.hop(dir).selection.extend(dir);
+        // else level up if possible
+        else if (this.parent !== this.root) {
+          this.insertAdjacent(dir, this.parent.parent).selection.levelUp();
+        }
+      }
+      // else cursor is at the (-dir) edge of selection, retract if possible
+      else {
+        this.hop(dir);
+
+        // clear the selection if we only have one thing selected
+        if (this.selection.ends[dir] === this.selection.ends[-dir]) {
+          this.clearSelection().show();
+          return;
+        }
+
+        this.selection.retract(dir);
+      }
     }
+    // no selection, create one
+    else {
+      if (this[dir]) this.hop(dir);
+      // else edge of a block
+      else {
+        if (this.parent === this.root) return;
+
+        this.insertAdjacent(dir, this.parent.parent);
+      }
+
+      this.hide().selection = Selection(this[-dir]);
+    }
+
     this.root.selectionChanged();
   };
-  _.selectRight = function() {
-    clearUpDownCache(this);
-    if (this.selection) {
-      if (this.selection.last === this[L]) { //if cursor is at right edge of selection;
-        if (this[R]) //then extend right if possible
-          this.hopRight().selection.extendRight();
-        else if (this.parent !== this.root) //else level up if possible
-          this.insertAfter(this.parent.parent).selection.levelUp();
-      }
-      else { //else cursor is at left edge of selection, retract right if possible
-        this.hopRight();
-        if (this.selection.first === this.selection.last) {
-          this.clearSelection().show(); //clear selection if retracting to nothing
-          return; //skip this.root.selectionChanged(), this.clearSelection() does it anyway
-        }
-        this.selection.retractRight();
-      }
-    }
-    else {
-      if (this[R])
-        this.hopRight();
-      else //end of a block
-        if (this.parent !== this.root)
-          this.insertAfter(this.parent.parent);
-        else
-          return;
-
-      this.hide().selection = Selection(this[L]);
-    }
-    this.root.selectionChanged();
-  };
+  _.selectLeft = function() { return this.selectHoriz(L); };
+  _.selectRight = function() { return this.selectHoriz(R); };
 
   function clearUpDownCache(self) {
     self.upDownCache = {};
@@ -552,8 +533,8 @@ var Cursor = P(function(_) {
   _.deleteSelection = function() {
     if (!this.selection) return false;
 
-    this[L] = this.selection.first[L];
-    this[R] = this.selection.last[R];
+    this[L] = this.selection.ends[L][L];
+    this[R] = this.selection.ends[R][R];
     this.selection.remove();
     this.root.selectionChanged();
     return delete this.selection;
@@ -581,24 +562,24 @@ var Selection = P(MathFragment, function(_, _super) {
   };
   _.levelUp = function() {
     var seln = this,
-      gramp = seln.first = seln.last = seln.last.parent.parent;
+      gramp = seln.ends[L] = seln.ends[R] = seln.ends[R].parent.parent;
     seln.clear().jQwrap(gramp.jQ);
     return seln;
   };
-  _.extendLeft = function() {
-    this.first = this.first[L];
-    this.first.jQ.prependTo(this.jQ);
+  _.extend = function(dir) {
+    prayDirection(dir);
+    this.ends[dir] = this.ends[dir][dir];
+    jQinsertExtreme(dir, this.ends[dir].jQ, this.jQ);
+    return this;
   };
-  _.extendRight = function() {
-    this.last = this.last[R];
-    this.last.jQ.appendTo(this.jQ);
+  _.extendLeft = function() { return this.extend(L); };
+  _.extendRight = function() { return this.extend(R); };
+
+  _.retract = function(dir) {
+    prayDirection(dir);
+    jQinsertAdjacent(-dir, this.ends[-dir].jQ, this.jQ);
+    this.ends[-dir] = this.ends[-dir][dir];
   };
-  _.retractRight = function() {
-    this.first.jQ.insertBefore(this.jQ);
-    this.first = this.first[R];
-  };
-  _.retractLeft = function() {
-    this.last.jQ.insertAfter(this.jQ);
-    this.last = this.last[L];
-  };
+  _.retractRight = function() { return this.retract(R); };
+  _.retractLeft = function() { return this.retract(L); };
 });

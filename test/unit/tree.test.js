@@ -18,7 +18,6 @@ suite('tree', function() {
       var parent = Node();
       var child = Node();
 
-      debugger;
       child.adopt(parent, 0, 0);
 
       assert.equal(child.parent, parent, 'child.parent is set');

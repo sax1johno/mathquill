@@ -14,6 +14,35 @@
 var L = -1;
 var R = 1;
 
+function prayDirection(dir) {
+  pray('a direction was passed', dir === L || dir === R);
+}
+
+// directionalizable versions of common jQuery traversals
+function jQinsertAdjacent(dir, el, target) {
+  return (
+    dir === L ?
+    el.insertBefore(target) :
+    el.insertAfter(target)
+  );
+}
+
+function jQinsertExtreme(dir, el, target) {
+  return (
+    dir === L ?
+    el.prependTo(target) :
+    el.appendTo(target)
+  );
+}
+
+function jQgetExtreme(dir, el) {
+  return (
+    dir === L ?
+    el.first() :
+    el.last()
+  )
+}
+
 /**
  * MathQuill virtual-DOM tree-node abstract base class
  */
@@ -48,6 +77,26 @@ var Node = P(function(_) {
   _.disown = function() {
     Fragment(this, this).disown();
     return this;
+  };
+
+  _.adjacentPoint = function(dir) {
+    prayDirection(dir);
+    return (
+      dir === L ?
+      Point(this.parent, this[L], this) :
+      Point(this.parent, this, this[R])
+    )
+  };
+
+  _.extremePoint = function(dir) {
+    prayDirection(dir);
+
+    var out = Point();
+    out.parent = this;
+    out[dir] = 0;
+    out[-dir] = this.ch[dir];
+
+    return out;
   };
 });
 
@@ -184,5 +233,17 @@ var Fragment = P(function(_) {
     });
 
     return fold;
+  };
+});
+
+var Point = P(function(_) {
+  _.parent = 0;
+  _[L] = 0;
+  _[R] = 0;
+
+  _.init = function(parent, prev, next) {
+    this.parent = parent || 0;
+    this[L] = prev || 0;
+    this[R] = next || 0;
   };
 });
